@@ -1,0 +1,14 @@
+# Folders
+__pycache__/
+# Files
+*.weights
+*.t7
+*.mp4
+*.avi
+*.pt
+*.h5
+*.pb
+*.jpg
+.idea
+*.pickle
+
