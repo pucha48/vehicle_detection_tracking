@@ -4,7 +4,7 @@ CLASS_FILE_PATH= os.path.join(current_dir, 'weights','original', 'yolov3.names')
 CFG_FILE = os.path.join(current_dir, 'weights','original','yolov3.cfg')
 WEIGHTS = os.path.join(current_dir,'weights','original', 'yolov3.weights')
 
-VIDEO_PATH="testing_video/1234.mp4"
+VIDEO_PATH="testing_video/final.mp4"
 SIZE = 416  # NEW UPDATE
 CONF_THRESHOLD = 0.5 # NEW UPDATE
 IOU_THRESHOLD = 0.2  # NEW UPDATE
