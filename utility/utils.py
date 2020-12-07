@@ -6,6 +6,13 @@ import math
 import requests
 import numpy as np
 import tensorflow as tf
+# gpu_options = tf.GPUOptions(visible_device_list="0")
+# config = tf.ConfigProto()
+# # config.gpu_options.visible_device_list = "0"
+# config.gpu_options.allow_growth=True
+#
+# sess = tf.Session(config=config)
+
 from PIL import ImageDraw, Image
 
 
@@ -367,10 +374,10 @@ def return_box(box, format, width, height):
         y2 = abs(int(round(((box[1] + box[3] / 2.0) * height).item())))
         cord = [x1, y1, x2, y2]
     elif format == 'xywh':
-        x1 = int(round(((box[0] - box[2] / 2.0) * width).item()))
-        y1 = int(round(((box[1] - box[3] / 2.0) * height).item()))
-        w = int(round((box[2] * width).item()))
-        h = int(round((box[3] * height).item()))
+        x1 = box[0]
+        y1 = box[1]
+        w = int(round(box[2] - box[0]))
+        h = int(round(box[3] - box[1]))
         cord = [x1, y1, w, h]
     return cord
 
