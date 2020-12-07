@@ -56,7 +56,6 @@ def frame_read_fun(url):
             cv2.destroyAllWindows()
             break
 
-
 def to_deepsort(bboxs_human, img, cp_boxs, frame, encoder, nms_max_overlap, tracker_cp):
     height, width = img.shape[:2]
     cp_detections, cp_current_det = 0, 0
@@ -76,48 +75,30 @@ def to_deepsort(bboxs_human, img, cp_boxs, frame, encoder, nms_max_overlap, trac
 def main():
     yolo = YOLO()
     global idx_list, idx_sel, class_sel, frame_current
-    cp_current_det = 0
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
     max_cosine_distance = MAX_COSINE_DISTANCE
     nn_budget = NN_BUDGET
-    c = 0
-
-    # To make the code work online and offline
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--online", help="run in online mode", action='store_true')
-    parser.add_argument("--offline", help="run in offline mode", action='store_true')
-    args = parser.parse_args()
-
-    if args.online:
-        print("Starting in online mode.")
-        # fetch cv2 from url
-        thread_read_frame = threading.Thread(target=frame_read_fun, name='thread_read_frame', args=(ROS_URL,))
-        thread_read_frame.start()
-
-    elif args.offline:
-        print("Starting in offline mode.")
-        try:
-            cap = cv2.VideoCapture(VIDEO_PATH)
-        except Exception as e:
-            print(e)
-
-    else:
-        sys.exit(1)
+    try:
+        cap = cv2.VideoCapture(VIDEO_PATH)
+    except Exception as e:
+        print(e)
 
     metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
-    tracker_cp = Tracker(metric, max_iou_distance=0.5, max_age=50800, n_init=10, ww=2, vv=160)  # UPDATE FEB 25
+    tracker_cp = Tracker(metric, max_iou_distance=0.5, max_age=50800, n_init=10, ww=2, vv=160)
     cp_previous_det = 0
     '''Loading Yolo file and passing each frame for inference'''
-    model_filename = os.path.join('model_data', 'market1501.pb')  # model for person # NEW UPDATE
-    encoder = gdet.create_box_encoder(model_filename, batch_size=128)  # NEW UPDATE
+    model_filename = os.path.join('model_data', 'market1501.pb')
+    encoder = gdet.create_box_encoder(model_filename, batch_size=128)
+    counter = 0
     while True:
+        cp_boxs = []
+        boxs_cars = []
         try:
-            if args.offline:
-                ret, frame_current = cap.read()
-                if not ret:
-                    print('Video Not available')
-                    break
+            ret, frame_current = cap.read()
+            if not ret:
+                print('Video Not available')
+                cv2.destroyAllWindows()
+                break
             frame = frame_current
             if cp_previous_det <= 1:
                 max_cosine_distance = 0.9  # 0.9
@@ -131,9 +112,6 @@ def main():
                 nms_max_overlap = 0.1
                 metric.change_cost(matching_threshold=max_cosine_distance, budget=nn_budget)
                 tracker_cp.change_params(metric, max_iou_distance=0.7, n_init=100)
-            c += 1
-            boxs_cars = []
-            cp_boxs = []
             img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             bboxs = yolo.detect(frame_current)
             bboxs_vehicle = [i for i in bboxs if i[4] in [2,3,4,8]]    # Taking bicycle, car, motorcycle and truck as vehicles
@@ -150,6 +128,8 @@ def main():
                         cv2.putText(frame, str('%s' % track.track_id), (int(bbox[2]), int(bbox[1])), 0, 5e-3 * 50,
                                     (0, 255, 0), 1)
             cv2.imshow('image', frame)
+            cv2.imwrite("testing_video/" + str(counter).zfill(4) + '.jpg',frame)
+            counter += 1
             cv2.waitKey(1)
             cp_previous_det = cp_current_det
         except Exception as e:

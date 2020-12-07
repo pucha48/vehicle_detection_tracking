@@ -1,0 +1,30 @@
+commit a4372950254ef8d69f3ddb7969baedb37d3c09b8 (HEAD -> main, origin/main, origin/HEAD)
+Author: pucha48 <malakpurushottam48@gmail.com>
+Date:   Mon Dec 7 14:31:13 2020 +0530
+
+    Final testing with sample video
+
+commit 1bd21f1871fa875510a08f84e3ce3429a5718848
+Author: pucha48 <malakpurushottam48@gmail.com>
+Date:   Mon Dec 7 14:14:09 2020 +0530
+
+    Removing Autoencoder and Cleaning
+
+commit 463a2e63073a3bd5348d5f00c470716bfb3faa2d
+Author: pucha48 <malakpurushottam48@gmail.com>
+Date:   Mon Dec 7 14:03:04 2020 +0530
+
+    working Vehicle tracking
+
+commit c57391719718c28ef8beb7382e00c032efa100fa
+Author: pucha48 <malakpurushottam48@gmail.com>
+Date:   Mon Dec 7 00:06:41 2020 +0530
+
+    Adding base code
+
+commit f3d99c605e4146562b888649d6bd2a280ef103c9
+Author: pucha48 <malakpurushottam48@gmail.com>
+Date:   Sun Dec 6 23:54:56 2020 +0530
+
+    Initial commit
+
