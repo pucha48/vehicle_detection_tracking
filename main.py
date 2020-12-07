@@ -1,6 +1,3 @@
-'''This code is using yolo for both detection and classification of all 5 classes, Tracking is done by a single
-deep sort for persons and for vehciles auto encoder is being used'''
-
 import os, sys
 import json
 import warnings
@@ -26,8 +23,6 @@ warnings.filterwarnings('ignore')
 objects = []
 click_flag = 0
 
-timer = 0
-class_dict = {0: 'cp', 1: 'mp', 2: 'cv', 3: 'mv', 4: 'ugv'}
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 def change_parms(tracker, metric):
@@ -49,29 +44,6 @@ def deepsort_detections(encoder, frame, boxs, nms_max_overlap):
     detections = [detections[i] for i in indices]
 
     return detections, temp
-
-
-def on_mouse(event, x, y, flags, params):
-    global mouse_x, mouse_y, idx_sel
-    global class_sel, id_sel, idx_list
-    global click_flag
-    if event == cv2.EVENT_LBUTTONDOWN:
-        mouse_x = x
-        mouse_y = y
-        print(mouse_x, mouse_y)
-        for idx, value in enumerate(objects):
-            x1 = value['bbox'][0]
-            y1 = value['bbox'][1]
-            x2 = value['bbox'][2]
-            y2 = value['bbox'][3]
-            if mouse_x > x1 and mouse_x < x2 and mouse_y > y1 and mouse_y < y2:
-                print("in_mouse")
-                class_sel = value['label']
-                idx_sel = value['idx']
-                idx_list = idx
-
-        click_flag = 1
-
 
 def frame_read_fun(url):
     global cap, ret, frame_current
@@ -105,14 +77,9 @@ def to_deepsort(bboxs_human, img, cp_boxs, frame, encoder, nms_max_overlap, trac
 def main():
     yolo = YOLO()
     global idx_list, objects, idx_sel, class_sel, frame_current
-    # autoencoder = Autoencoder()
-    feature_list = []
     cp_current_det = 0
-    reference_time = time.time()
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-    cv2.setMouseCallback('image', on_mouse)
     frames = 0
-    class_names = CLASS_FILE_PATH  # NEW UPDATE
     max_cosine_distance = MAX_COSINE_DISTANCE
     nn_budget = NN_BUDGET
     c = 0
@@ -150,8 +117,6 @@ def main():
 
     model_filename = os.path.join('model_data', 'market1501.pb')  # model for person # NEW UPDATE
     encoder = gdet.create_box_encoder(model_filename, batch_size=128)  # NEW UPDATE
-    # autoencoder_cnn = autoencoder.initiate_model()
-    print("-------")
     while True:
         try:
             tracker_flag = False
@@ -163,7 +128,6 @@ def main():
             frames += 1
             frame_count += 1
             frame = frame_current
-            startexecution2 = datetime.datetime.now()
             if cp_previous_det <= 1:
                 max_cosine_distance = 0.9  # 0.9
                 nn_budget = 10000
@@ -181,20 +145,10 @@ def main():
             boxs_cars = []
             cp_boxs = []
             img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            startexecution1 = datetime.datetime.now()
-            # bboxs = yolo3(img)
             bboxs = yolo.detect(frame_current)
-            stopexecution1 = datetime.datetime.now()
-            totalexectiontime = stopexecution1 - startexecution1
-            print('detectiontime', totalexectiontime.total_seconds())
-
-            bboxs_human = [i for i in bboxs if i[4] in [0, 1]]
             bboxs_vehicle = [i for i in bboxs if i[4] in [2,3,4,8]]
-            feature_list_partial = []
-            labeled_list = []
-            if ALL_OBJ:
-                cp_detections, cp_current_det, frame = to_deepsort(bboxs_vehicle, img, cp_boxs, frame, encoder,
-                                                                   nms_max_overlap, tracker_cp)
+            cp_detections, cp_current_det, frame = to_deepsort(bboxs_vehicle, img, cp_boxs, frame, encoder,
+                                                               nms_max_overlap, tracker_cp)
             if (cp_current_det != 0 and cp_current_det >= cp_previous_det) or len(boxs_cars) > 0:
                 if len(cp_boxs) > 0:
                     for track in tracker_cp.tracks:
@@ -206,7 +160,6 @@ def main():
                                       (255, 255, 255), 2)
                         cv2.putText(frame, str('%s' % track.track_id), (int(bbox[2]), int(bbox[1])), 0, 5e-3 * 200,
                                     (0, 255, 0), 2)
-                        # cv2.imwrite(curr_dir + "/crop_images/" + str(frame_count) + ".jpg", frame)
                         objects.append({'idx': '%s' % track.track_id, 'label': 'person',
                                         'bbox': [int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])],
                                         'actions': {'zoom': 0, 'sentry_mode': 0}})
@@ -215,7 +168,6 @@ def main():
             cp_previous_det = cp_current_det
         except Exception as e:
             print(e)
-
 
 if __name__ == "__main__":
     main()
