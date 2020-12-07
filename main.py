@@ -74,8 +74,8 @@ def to_deepsort(bboxs, img, cp_boxs, frame, encoder, nms_max_overlap, tracker_cp
 
 def cal_speed(id):
     global speed_data
-    horizontal_factor = 10 # pixels per meter
-    vertical_factor  = 10 # pixels per meter
+    horizontal_factor = 3 # pixels per meter
+    vertical_factor  = 3 # pixels per meter
     x1,y1,x2,y2,s,sp = speed_data[id]
     hor_dis = abs((x1-x2)/horizontal_factor)
     ver_dis = abs((y1-y2)/vertical_factor)
@@ -104,9 +104,7 @@ def main():
     model_filename = os.path.join('model_data', 'market1501.pb')
     encoder = gdet.create_box_encoder(model_filename, batch_size=128)
     global speed_data
-    start_time = time.time()
-    frame_counter = 0
-    speed = 0
+    counter = 0
     while True:
         cp_boxs = []
         try:
@@ -142,7 +140,7 @@ def main():
                             if track.track_id in speed_data.keys():
                                 dist = math.sqrt(math.pow((speed_data[track.track_id][0] - center_x),2) +
                                 math.pow((speed_data[track.track_id][1] - center_y), 2))
-                                if dist > 40:
+                                if dist > 50:
                                     speed_data[track.track_id][2] = center_x
                                     speed_data[track.track_id][3] = center_y
                                     speed = cal_speed(track.track_id)
@@ -162,9 +160,10 @@ def main():
                                           (255, 255, 255), 1)
                             cv2.putText(frame, str('%s' % track.track_id + "   S->" + str(speed_data[track.track_id][5])),
                                         (int(bbox[0]), int(bbox[1])), 0, 5e-3 * 90, (0, 255, 0), 1)
-            # cv2.imshow('image', frame)
-            cv2.imwrite("testing_video/" + str(frame[0][0][0]).zfill(4) + '.jpg', frame)
+            cv2.imshow('image', frame)
+            cv2.imwrite("testing_video/" + str(counter).zfill(4) + '.jpg', frame)
             cv2.waitKey(1)
+            counter += 1
             cp_previous_det = cp_current_det
         except Exception as e:
             print(e)
